@@ -106,6 +106,7 @@
       ms-python.debugpy
       ms-python.mypy-type-checker
       docker.docker
+      vscjava.vscode-java-pack
     ];
   };
   programs.dconf.profiles.user.databases = [
@@ -118,6 +119,17 @@
         "org/gnome/desktop/interface" = {
           enable-hot-corners = false;
           gtk-enable-primary-paste = false;
+        };
+        "org/gnome/settings-daemon/plugins/media-keys" = {
+          custom-keybindings=["/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"];
+        };
+        "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
+          binding = "<Control>t";
+          command = "terminator";
+          name = "Terminator";
+        };
+        "org/gnome/settings-daemon/plugins/color" = {
+          night-light-enabled = true;
         };
       };
     }
@@ -144,6 +156,16 @@
    uv
    gnome-tweaks
    kdePackages.okular
+   anki
+   tldr
+   jdk25_headless
+   maven
+   gnumake
+   cmake
+   libgcc
+   clang
+   quarkus
+   ollama-cpu
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
