@@ -1,14 +1,24 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ config, pkgs, ... }:
-
+{ lib, onfig, pkgs, ... }:
+let 
+  nix-alien-pkgs = import (
+    builtins.fetchTarball "https://github.com/thiagokokada/nix-alien/tarball/master"
+  ) { };
+in
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
+
+  security.sudo = {
+    enable = true;
+    wheelNeedsPassword = true;
+    configFile = ''
+      Defaults timestamp_timeout=20
+    '';
+  };
+
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -124,7 +134,7 @@
           custom-keybindings=["/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"];
         };
         "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
-          binding = "<Control>t";
+          binding = "<Control><Shift>t";
           command = "terminator";
           name = "Terminator";
         };
@@ -138,9 +148,27 @@
     enable = true;
     terminal = "terminator";
   };
+  programs.nix-ld.enable = true;
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
-
+  nixpkgs.overlays = [(
+    final: prev: rec {
+      pythonldlibpath = lib.makeLibraryPath (with prev; [
+        zlib zstd stdenv.cc.cc curl openssl attr libssh bzip2 libxml2 acl libsodium util-linux xz systemd
+      ]);
+      python = prev.stdenv.mkDerivation {
+        name = "python";
+        buildInputs = [ prev.makeWrapper ];
+        src = prev.python313;
+        installPhase = ''
+          mkdir -p $out/bin
+          cp -r $src/* $out/
+          wrapProgram $out/bin/python3 --set LD_LIBRARY_PATH ${pythonldlibpath}
+          wrapProgram $out/bin/python3.13 --set LD_LIBRARY_PATH ${pythonldlibpath}
+        '';
+      };
+    }
+  )];
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
@@ -152,13 +180,12 @@
    calibre
    gimp
    go
-   pyenv
    uv
    gnome-tweaks
    kdePackages.okular
    anki
    tldr
-   jdk25_headless
+   jdk21_headless
    maven
    gnumake
    cmake
@@ -166,7 +193,15 @@
    clang
    quarkus
    ollama-cpu
+   # graalvmPackages.graalpy
+   (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
+      pandas
+      requests
+      pip
+    ]))
+   nix-alien-pkgs.nix-alien
   ];
+  environment.localBinInPath = true; # adds ~/.local/bin to PATH
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
