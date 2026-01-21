@@ -117,6 +117,7 @@ in
       ms-python.mypy-type-checker
       docker.docker
       vscjava.vscode-java-pack
+      ms-toolsai.jupyter
     ];
   };
   programs.dconf.profiles.user.databases = [
@@ -134,7 +135,7 @@ in
           custom-keybindings=["/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"];
         };
         "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
-          binding = "<Control><Shift>t";
+          binding = "<Control><Alt>t";
           command = "terminator";
           name = "Terminator";
         };
@@ -199,7 +200,9 @@ in
       requests
       pip
     ]))
-   nix-alien-pkgs.nix-alien
+   nix-alien-pkgs.nix-alien(azure-cli.withExtensions [
+      azure-cli.extensions.azure-devops
+    ])
   ];
   environment.localBinInPath = true; # adds ~/.local/bin to PATH
 
