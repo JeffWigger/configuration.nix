@@ -105,6 +105,7 @@ in
   # Install firefox.
   programs.firefox.enable = true;
 
+
   programs.vscode = {
     enable = true;
     extensions = with pkgs.vscode-extensions; [
@@ -118,6 +119,8 @@ in
       docker.docker
       vscjava.vscode-java-pack
       ms-toolsai.jupyter
+      github.copilot
+      github.copilot-chat
     ];
   };
   programs.dconf.profiles.user.databases = [
@@ -172,6 +175,10 @@ in
   )];
   # List packages installed in system profile. To search, run:
   # $ nix search wget
+  programs.steam.package = pkgs.steam.override {
+     withPrimus = true;
+     extraPkgs = [ pkgs.bumblebee pkgs.glxinfo ];
+  };
   environment.systemPackages = with pkgs; [
    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
    wget
@@ -193,6 +200,9 @@ in
    libgcc
    clang
    quarkus
+   img2pdf
+   imagemagick
+   poppler-utils
    ollama-cpu
    # graalvmPackages.graalpy
    (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
@@ -203,6 +213,9 @@ in
    nix-alien-pkgs.nix-alien(azure-cli.withExtensions [
       azure-cli.extensions.azure-devops
     ])
+   ghostscript
+   inkscape
+   libreoffice
   ];
   environment.localBinInPath = true; # adds ~/.local/bin to PATH
 
